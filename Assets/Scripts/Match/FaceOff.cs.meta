@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: c1a176361fd2c674fb414db79f192c8b
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - whistleSound: {fileID: 8300000, guid: bed5d15443b532f40828d9cd41c888bb, type: 3}
+  - puck: {instanceID: 0}
+  - player1: {instanceID: 0}
+  - player2: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 

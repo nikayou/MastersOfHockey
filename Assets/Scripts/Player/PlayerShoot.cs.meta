@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 9d8b957f20012834d917d76836b44a62
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - puck: {instanceID: 0}
+  - shotSound: {fileID: 8300000, guid: eee0651cbef8edf44be6b16c33c8b7c4, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 

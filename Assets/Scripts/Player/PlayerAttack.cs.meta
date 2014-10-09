@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 34cb95465c3082249ae573a440a26b80
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - attackSound: {fileID: 8300000, guid: ef4ce9ad2e7a2f846a99930c33faef04, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 

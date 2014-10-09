@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: deed98e09e2ac654b9c130436aa17ae8
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - hornClip: {fileID: 8300000, guid: 3527e0db27da0144aafbb2f2f5806156, type: 3}
+  - crowdSound: {fileID: 8300000, guid: 358e980b02ad9244bac31a673cbe5271, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 

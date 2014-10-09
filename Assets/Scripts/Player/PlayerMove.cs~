@@ -1,0 +1,210 @@
+﻿using UnityEngine;
+using System.Collections;
+using XboxCtrlrInput;
+
+[RequireComponent (typeof(Rigidbody2D))]
+[RequireComponent (typeof(PlayerController))]
+
+public class PlayerMove : MonoBehaviour
+{
+		/// <summary>
+		/// The minimum speed at which the player goes.
+		/// </summary>
+		public float minSpeed = 3f;
+		/// <summary>
+		/// The maximum speed at which the player can go (attack not included).
+		/// </summary>
+		public float maxSpeed = 10f;
+		/// <summary>
+		/// Acceleration and deceleration.
+		/// </summary>
+		public float speedSmoothing = 1.5f; 
+		/// <summary>
+		/// Speed of orientation change.
+		/// </summary>
+		public float rotationSmoothing = 8f;
+		/// <summary>
+		/// Total duration of stunning, in seconds.
+		/// </summary>
+		public float stunTime = 3.0f;
+		/// <summary>
+		/// Time before starting to decelerate when stopped accelerating, in seconds.
+		/// </summary>
+		public float timeBeforeDeceleration = 0.5f;
+		private float decelerationTimer;
+		/// <summary>
+		/// Direction the player is facing.
+		/// </summary>
+		private Vector2 direction;
+		/// <summary>
+		/// Trajectory of the player.
+		/// </summary>
+		private Vector2 trajectory;
+		private Vector2 forward;
+
+		private PlayerController myController;
+
+		void Awake ()
+		{
+			myController = GetComponent<PlayerController>();
+		}
+
+		void Start ()
+		{
+				myController.speed = minSpeed;
+				direction = forward;
+				trajectory = forward;
+		}
+
+		void Update ()
+		{
+				forward = transform.right;
+				decelerationTimer -= Time.deltaTime;
+				if (!IsBlocked ()) {
+						bool isMoving = false;
+						// getting direction for movement only if not charging
+						if (!IsStun () && !IsAttacking ()) {
+								float x = XCI.GetAxis (XboxAxis.LeftStickX, myController.playerID);
+								float y = XCI.GetAxis (XboxAxis.LeftStickY, myController.playerID);
+								if (x != 0 || y != 0) {
+										direction = (new Vector2 (x, y)).normalized;
+										// changing trajectory only if not locking
+										if (!CheckDrift () && !IsCharging ()) {
+												trajectory = direction;
+												isMoving = true;
+										}
+								}
+						}
+						myController.accelerating = isMoving;
+						CheckSpeed ();
+				} else {
+						direction = forward;
+						trajectory = forward;
+				}
+		}
+
+		/// <summary>
+		/// Checks if the player is locking. Sets the animator accordingly. 
+		/// </summary>
+		/// <returns><c>true</c>, if locking, <c>false</c> otherwise.</returns>
+		bool CheckDrift ()
+		{
+Debug.Log("drfintg ? "+XCI.GetAxis (XboxAxis.LeftTrigger, myController.playerID));
+				if (XCI.GetAxis (XboxAxis.LeftTrigger, myController.playerID) != 0 || XCI.GetButton (XboxButton.LeftBumper, myController.playerID)) {
+myController.drifting = true;
+						return true;
+				} else {
+myController.drifting = false;
+						return false;
+				}
+		}
+
+		/// <summary>
+		/// Computes the speed with "Accelerate" and "Decelerate". Sets the animator accordingly.
+		/// </summary>
+		void CheckSpeed ()
+		{
+				// always decelerating, unless player is moving	
+				if (IsAccelerating ()) {
+						decelerationTimer = timeBeforeDeceleration;
+						Accelerate ();
+				} else if (decelerationTimer <= 0) {
+						Decelerate ();
+				}
+		}
+
+		bool IsBlocked ()
+		{
+				return myController.blocked;
+		}
+
+		bool IsCharging ()
+		{
+				return myController.charging;
+		}
+
+		bool IsStun ()
+		{
+				return myController.stun;
+		}
+
+		bool IsAccelerating ()
+		{
+				return myController.accelerating;
+		}
+
+		bool IsAttacking ()
+		{
+				return myController.attacking;
+		}
+
+		bool IsDrifting ()
+		{
+				return myController.drifting;
+		}
+
+		/// <summary>
+		/// Changes the speed smoothly to the maximum speed.
+		/// </summary>
+		void Accelerate ()
+		{
+myController.speed = Mathf.Lerp (myController.speed, maxSpeed, speedSmoothing * Time.deltaTime);
+		}
+
+		/// <summary>
+		/// Changes the speed smoothly to the minimum speed.
+		/// </summary>
+		void Decelerate ()
+		{
+				// TODO: more decreasing if drifting
+				myController.speed = Mathf.Lerp (myController.speed, minSpeed, speedSmoothing * Time.deltaTime);
+		}
+
+		/// <summary>
+		/// Stun the player and launches coroutine to un-stun him "stunTime" seconds later.
+		/// </summary>
+		public IEnumerator Stun ()
+		{
+				myController.stun = true;
+				yield return new WaitForSeconds (stunTime);
+				myController.stun = false;
+		}
+
+		void FixedUpdate ()
+		{
+				// TODO: when an close opponent has the puck, look at it
+				if (!IsBlocked ()) {
+						rigidbody2D.velocity = Vector2.zero;
+						rigidbody2D.angularVelocity = 0f;
+						Rotate (direction);
+						if (!IsDrifting () && !IsCharging ()) {
+								rigidbody2D.MovePosition (rigidbody2D.position + forward * myController.speed * Time.fixedDeltaTime);
+						} else {
+								rigidbody2D.MovePosition (rigidbody2D.position + (trajectory * myController.speed * Time.fixedDeltaTime));
+						}
+				}
+		}
+
+		/// <summary>
+		/// Rotate smoothly to the specified direction.
+		/// </summary>
+		/// <param name="direction">Direction to rotate smoothly to.</param>
+		void Rotate (Vector2 direction)
+		{
+				if (direction == Vector2.zero)
+						return;
+				float targetAngle = Vector2.Angle (Vector2.right, direction);
+				if (direction.y < 0f)
+						targetAngle *= -1;
+				if (Mathf.Abs (rigidbody2D.rotation - targetAngle) > 180f) {
+						if (rigidbody2D.rotation > 0f) {
+								rigidbody2D.rotation -= 360f;
+						} else {
+								rigidbody2D.rotation += 360f;
+						}
+				}
+				float targetRotation = Mathf.Lerp (rigidbody2D.rotation, targetAngle, rotationSmoothing * Time.fixedDeltaTime);
+				rigidbody2D.MoveRotation (targetRotation);
+		}
+
+}

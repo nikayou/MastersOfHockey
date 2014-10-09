@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 2c8a57684d6938f4cb90920af074be49
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - puck: {instanceID: 0}
+  - guyPrefab: {fileID: 100000, guid: 3f67b71758749284ebbae7b4abc0fddf, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
